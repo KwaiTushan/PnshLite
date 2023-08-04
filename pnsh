@@ -1,0 +1,263 @@
+#!/usr/bin/fish
+function help_echo
+echo '(./)app [-d/root=] [b/build, i/init, n/new, p/push, v/version, h/help/*]
+    
+    Args:
+
+        -d/root=: Set root for project
+    
+    Actions:
+
+        b/build: Build a product in the root directory
+        Example: ./app -d ~/MyProject b product
+        //This will build executable file "product" under ~/MyProject
+        
+        i/init: Init a project
+        Example: ./app -d ~/MyProject i
+        //This will create a new project at ~/MyProject
+        
+        n/new: Create a new function in project
+        Example: ./app -d ~/MyProject utils/meow
+        //This will create a new function under ~/MyProject/codes/utils/meow
+        
+        p/push: Push automatcally to remote git
+        Example: ./app -d ~/tsingkwai push
+        
+        v/version: Show version
+        
+        h/help/*: Show this message
+'
+end
+
+function logger-warn
+set_color magenta
+echo "$prefix ! $argv[1..-1]"
+set_color normal
+end
+function logger-error
+set_color red
+echo "$prefix x $argv[1..-1]"
+set_color normal
+end
+function logger-info-start
+set_color normal
+echo "$prefix + $argv[1..-1]"
+set_color normal
+end
+function logger-info-end
+set_color normal
+echo "$prefix - $argv[1..-1]"
+set_color normal
+end
+function logger-debug
+set_color yellow
+echo "$prefix ? $argv[1..-1]"
+set_color normal
+end
+function logger-success
+set_color green
+echo "$prefix √ $argv[1..-1]"
+set_color normal
+end
+function logger -d "a lib to print msg quickly"
+switch $argv[1]
+    case 0
+        logger-info-start $argv[2..-1]
+    case 1
+        logger-info-end $argv[2..-1]
+    case 2
+        logger-success $argv[2..-1]
+    case 3
+        logger-debug $argv[2..-1]
+    case 4
+        logger-warn $argv[2..-1]
+    case 5
+        logger-error $argv[2..-1]
+end
+end
+function chk
+    switch $argv[1]
+        case rw
+            if test -w $argv[2]
+                return 0
+            else
+                logger 5 "Not writable"
+                exit 1
+            end
+    end
+end
+function new
+    if test -z $argv[1]
+        logger 5 "Nothing to create,abort"
+        exit 1
+    else
+        set basename (basename $argv[1])
+        if test -e "$root"/codes/$argv[1].fish
+            logger 3 "File this name existed,overwrite it?"
+            read -n1 -P "[y/n] " _delete_var_
+            switch $_delete_var_
+                case Y y
+                    echo -n "" >"$root"/codes/$argv[1].fish
+                case N n '*'
+                    logger 5 "User Aborted"
+                    exit 1
+            end
+        end
+        if mkdir -p "$root"/codes/(dirname $argv[1])
+            printf "function $basename\n\nend" >"$root"/codes/$argv[1].fish
+            logger 2 Done
+        else
+            logger 5 Failed
+        end
+        logger
+    end
+end
+function push
+    if [ "$argv" = "" ]
+        set commit_msg (date +"%Y-%m-%d_%T" -u)
+    else
+        set commit_msg $argv
+    end
+    cd "$root"
+    git add .
+    git commit -m $commit_msg
+    git push
+end
+function init
+    #Structure
+    mkdir -p "$root"/codes "$root"/configs "$root"/libs
+    #<=configs
+    echo 'set -x prefix 
+switch $argv[1]
+end' >"$root"/configs/main.fish
+    echo 'header
+logger
+help_echo' >"$root"/configs/pnsh.mod
+    #<=libs
+    echo "#!/usr/bin/fish" >"$root"/libs/header
+    echo 'function logger-warn
+set_color magenta
+echo "$prefix ! $argv[1..-1]"
+set_color normal
+end
+function logger-error
+set_color red
+echo "$prefix x $argv[1..-1]"
+set_color normal
+end
+function logger-info-start
+set_color normal
+echo "$prefix + $argv[1..-1]"
+set_color normal
+end
+function logger-info-end
+set_color normal
+echo "$prefix - $argv[1..-1]"
+set_color normal
+end
+function logger-debug
+set_color yellow
+echo "$prefix ? $argv[1..-1]"
+set_color normal
+end
+function logger-success
+set_color green
+echo "$prefix √ $argv[1..-1]"
+set_color normal
+end
+function logger -d "a lib to print msg quickly"
+switch $argv[1]
+    case 0
+        logger-info-start $argv[2..-1]
+    case 1
+        logger-info-end $argv[2..-1]
+    case 2
+        logger-success $argv[2..-1]
+    case 3
+        logger-debug $argv[2..-1]
+    case 4
+        logger-warn $argv[2..-1]
+    case 5
+        logger-error $argv[2..-1]
+end
+end' >"$root"/libs/logger
+    echo "function help_echo
+echo '(./)app'
+end
+" >"$root"/libs/help_echo
+    logger 2 Initialized
+end
+function build_def
+    if set -q argv[1]
+        set product $argv[1]
+    else
+        set product product
+    end
+    echo -n "" >"$root/$product"
+    logger 0 "Collecting blocks"
+    set counter_mods (cat "$root"/configs/pnsh.mod | count)
+    set counter_blocks (find "$root"/codes -type f 2>/dev/null | sed 's|^./||' | count)
+    set counter (math "$counter_mods+$counter_blocks")
+    set counter_built 0
+    set perc 0
+    logger 1 "Start building"
+    for mod in (cat "$root"/configs/pnsh.mod)
+        set perc (math -s0 "($counter_built/$counter)*100")
+        echo "[$perc% $counter_built/$counter] Building "$root"/libs/$mod."
+        cat "$root"/libs/$mod >>"$root/$product"
+        echo >>"$root/$product"
+        set counter_built (math "$counter_built+1")
+    end
+    for blocks in (find "$root"/codes -type f | sed 's|^./||')
+        set perc (math -s0 "($counter_built/$counter)*100")
+        echo "[$perc% $counter_built/$counter] Building "$root"/$blocks."
+        cat "$root"/$blocks >>"$root/$product"
+        echo >>"$root/$product"
+        set counter_built (math "$counter_built+1")
+    end
+    cat "$root"/configs/main.fish >>"$root/$product"
+    chmod +x "$root/$product"
+    logger 2 Built
+end
+set -x prefix [pnsh]
+argparse -i -n "$prefix" 'd/root=' -- $argv
+if set -q _flag_root
+    set -x root "$_flag_root"
+else
+    set -x root .
+end
+switch $argv[1]
+    case b build
+        chk rw "$root"
+        build_def $argv[2..-1]
+    case n new
+        chk rw "$root"
+        if set -q $argv[3]
+            for target in [2..-1]
+                new $argv[2..-1]
+            end
+        else
+            new $argv[2..-1]
+        end
+    case i init
+        if test -d "$root"
+            init $argv[2..-1]
+        else
+            logger 3 "Directory existed or its parent dir is not existed, continue to overwrite?"
+            read -n1 -P "[y/n] " prompt
+            switch $prompt
+                case y Y
+                    init $argv[2..-1]
+                case n N '*'
+                    logger 5 "User abort"
+                    exit 2
+            end
+        end
+    case p push
+        chk rw "$root"
+        push $argv[2..-1]
+    case v version
+        logger 0 Litchi@build2
+    case h help '*'
+        help_echo
+end

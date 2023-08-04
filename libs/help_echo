@@ -1,0 +1,30 @@
+function help_echo
+echo '(./)app [-d/root=] [b/build, i/init, n/new, p/push, v/version, h/help/*]
+    
+    Args:
+
+        -d/root=: Set root for project
+    
+    Actions:
+
+        b/build: Build a product in the root directory
+        Example: ./app -d ~/MyProject b product
+        //This will build executable file "product" under ~/MyProject
+        
+        i/init: Init a project
+        Example: ./app -d ~/MyProject i
+        //This will create a new project at ~/MyProject
+        
+        n/new: Create a new function in project
+        Example: ./app -d ~/MyProject utils/meow
+        //This will create a new function under ~/MyProject/codes/utils/meow
+        
+        p/push: Push automatcally to remote git
+        Example: ./app -d ~/tsingkwai push
+        
+        v/version: Show version
+        
+        h/help/*: Show this message
+'
+end
+
