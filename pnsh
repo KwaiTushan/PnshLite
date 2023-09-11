@@ -29,6 +29,7 @@ echo '(./)app [-d/root=] [b/build, i/init, n/new, p/push, v/version, h/help/*]
 '
 end
 
+
 function logger-warn
 set_color magenta
 echo "$prefix ! $argv[1..-1]"
@@ -75,6 +76,7 @@ switch $argv[1]
         logger-error $argv[2..-1]
 end
 end
+
 function chk
     switch $argv[1]
         case rw
@@ -86,6 +88,7 @@ function chk
             end
     end
 end
+
 function new
     if test -z $argv[1]
         logger 5 "Nothing to create,abort"
@@ -104,7 +107,12 @@ function new
             end
         end
         if mkdir -p "$root"/codes/(dirname $argv[1])
-            printf "function $basename\n\nend" >"$root"/codes/$argv[1].fish
+            set func_prename (dirname $argv[1])
+            if test -z "$func_prename"
+            else
+                set func_prename (dirname $argv[1] | string replace '/' '_')
+            end
+            printf "function "$func_prename"_"$basename"\n\nend" >"$root"/codes/$argv[1].fish
             logger 2 Done
         else
             logger 5 Failed
@@ -112,6 +120,7 @@ function new
         logger
     end
 end
+
 function push
     if [ "$argv" = "" ]
         set commit_msg (date +"%Y-%m-%d_%T" -u)
@@ -123,6 +132,7 @@ function push
     git commit -m $commit_msg
     git push
 end
+
 function init
     #Structure
     mkdir -p "$root"/codes "$root"/configs "$root"/libs
@@ -187,6 +197,7 @@ end
 " >"$root"/libs/help_echo
     logger 2 Initialized
 end
+
 function build_def
     if set -q argv[1]
         set product $argv[1]
@@ -219,6 +230,7 @@ function build_def
     chmod +x "$root/$product"
     logger 2 Built
 end
+
 set -x prefix [pnsh]
 argparse -i -n "$prefix" 'd/root=' -- $argv
 if set -q _flag_root
