@@ -22,10 +22,10 @@ switch $argv[1]
         chk rw "$root"
         if set -q $argv[3]
             for target in [2..-1]
-                del $argv[2..-1]
+                tools_del $argv[2..-1]
             end
         else
-            del $argv[2..-1]
+            tools_del $argv[2..-1]
         end
     case i init
         if test -d "$root"
@@ -45,7 +45,7 @@ switch $argv[1]
         chk rw "$root"
         push $argv[2..-1]
     case v version
-        logger 0 Nightingale@rev1441
+        logger 0 Nightingale@rev1442
     case h help '*'
         help_echo
 end
