@@ -17,11 +17,13 @@ function new
         end
         if mkdir -p "$root"/codes/(dirname $argv[1])
             set func_prename (dirname $argv[1])
+            set date (date)
             if test -z "$func_prename"
             else
                 set func_prename (dirname $argv[1] | string replace '/' '_')
             end
             printf "function "$func_prename"_"$basename"\n\nend" >"$root"/codes/$argv[1].fish
+            printf "$date -> "$func_prename"_"$basename"\n" >> "$root"/configs/function.history
             logger 2 Done
         else
             logger 5 Failed
