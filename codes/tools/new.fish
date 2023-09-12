@@ -28,6 +28,5 @@ function new
         else
             logger 5 Failed
         end
-        logger
     end
 end

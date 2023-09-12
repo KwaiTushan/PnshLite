@@ -18,6 +18,15 @@ switch $argv[1]
         else
             new $argv[2..-1]
         end
+    case d del
+        chk rw "$root"
+        if set -q $argv[3]
+            for target in [2..-1]
+                del $argv[2..-1]
+            end
+        else
+            del $argv[2..-1]
+        end
     case i init
         if test -d "$root"
             init $argv[2..-1]

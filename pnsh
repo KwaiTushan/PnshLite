@@ -119,7 +119,21 @@ function new
         else
             logger 5 Failed
         end
-        logger
+    end
+end
+
+function tools_del
+    if test -z $argv[1]
+        logger 5 "Nothing to delete,abort"
+        return 1
+    else
+        set basename (basename $argv[1])
+        if test -e "$root"/codes/$argv[1].fish
+            rm "$root"/codes/$argv[1].fish
+        else
+            logger 5 "File this name not found, action failed"
+            return 1
+        end
     end
 end
 
@@ -252,6 +266,15 @@ switch $argv[1]
             end
         else
             new $argv[2..-1]
+        end
+    case d del
+        chk rw "$root"
+        if set -q $argv[3]
+            for target in [2..-1]
+                del $argv[2..-1]
+            end
+        else
+            del $argv[2..-1]
         end
     case i init
         if test -d "$root"
