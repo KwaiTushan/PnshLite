@@ -3,7 +3,6 @@ function tools_del
         logger 5 "Nothing to delete,abort"
         return 1
     else
-        set basename (basename $argv[1])
         if test -e "$root"/codes/$argv[1].fish
             rm "$root"/codes/$argv[1].fish
         else
