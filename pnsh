@@ -95,6 +95,7 @@ function new
         exit 1
     else
         set basename (basename $argv[1])
+        set dirname (dirname $argv[1])
         if test -e "$root"/codes/$argv[1].fish
             logger 3 "File this name existed,overwrite it?"
             read -n1 -P "[y/n] " _delete_var_
@@ -106,15 +107,14 @@ function new
                     exit 1
             end
         end
-        if mkdir -p "$root"/codes/(dirname $argv[1])
-            set func_prename (dirname $argv[1])
+        if mkdir -p "$root"/codes/"$dirname"
             set date (date)
-            if test -z "$func_prename"
+            if test -z "$dirname"
             else
-                set func_prename (dirname $argv[1] | string replace '/' '_')
+                set dirname (echo "$dirname" | string replace -a '/' '_')
             end
-            printf "function "$func_prename"_"$basename"\n\nend" >"$root"/codes/$argv[1].fish
-            printf "$date -> "$func_prename"_"$basename"\n" >> "$root"/configs/function.history
+            printf "function "$dirname"_"$basename"\n\nend" >"$root"/codes/$argv[1].fish
+            printf "$date -> "$dirname"_"$basename"\n" >> "$root"/configs/function.history
             logger 2 Done
         else
             logger 5 Failed
@@ -293,7 +293,7 @@ switch $argv[1]
         chk rw "$root"
         push $argv[2..-1]
     case v version
-        logger 0 Nightingale@rev1442
+        logger 0 Nightingale@rev1443
     case h help '*'
         help_echo
 end
