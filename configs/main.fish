@@ -45,7 +45,7 @@ switch $argv[1]
         chk rw "$root"
         push $argv[2..-1]
     case v version
-        logger 0 Nightingale@rev1444
+        logger 0 Nightingale@rev1445
     case h help '*'
         help_echo
 end

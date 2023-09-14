@@ -127,6 +127,9 @@ function tools_del
         logger 5 "Nothing to delete,abort"
         return 1
     else
+        set date (date)
+        set basename (basename $argv[1])
+        set dirname (dirname $argv[1])
         if test -e "$root"/codes/$argv[1].fish
             rm "$root"/codes/$argv[1].fish
             printf "[DEL] $date -> "$dirname"_"$basename"\n" >> "$root"/configs/function.history
@@ -294,7 +297,7 @@ switch $argv[1]
         chk rw "$root"
         push $argv[2..-1]
     case v version
-        logger 0 Nightingale@rev1444
+        logger 0 Nightingale@rev1445
     case h help '*'
         help_echo
 end
