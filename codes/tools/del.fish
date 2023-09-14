@@ -5,6 +5,7 @@ function tools_del
     else
         if test -e "$root"/codes/$argv[1].fish
             rm "$root"/codes/$argv[1].fish
+            printf "[DEL] $date -> "$dirname"_"$basename"\n" >> "$root"/configs/function.history
         else
             logger 5 "File this name not found, action failed"
             return 1
