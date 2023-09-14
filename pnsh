@@ -114,7 +114,7 @@ function new
                 set dirname (echo "$dirname" | string replace -a '/' '_')
             end
             printf "function "$dirname"_"$basename"\n\nend" >"$root"/codes/$argv[1].fish
-            printf "$date -> "$dirname"_"$basename"\n" >> "$root"/configs/function.history
+            printf "[NEW] $date -> "$dirname"_"$basename"\n" >> "$root"/configs/function.history
             logger 2 Done
         else
             logger 5 Failed
